@@ -2190,22 +2190,22 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     if (!frame || avctx->codec_id == AV_CODEC_ID_MJPEG)
         return 0;
 
-    needReset = update_qp(avctx, q);
-    needReset |= update_max_frame_size(avctx, q);
-    needReset |= update_gop_size(avctx, q);
-    needReset |= update_rir(avctx, q);
-    needReset |= update_low_delay_brc(avctx, q);
-    needReset |= update_frame_rate(avctx, q);
-    needReset |= update_bitrate(avctx, q);
-    needReset |= update_pic_timing_sei(avctx, q);
-    ret = update_min_max_qp(avctx, q);
-    if (ret < 0)
-        return ret;
-    needReset |= ret;
-    if (!needReset) {
-        av_log(avctx, AV_LOG_VERBOSE, "UP: Not updated. returning\n");
-        return 0;
-    }
+    /* needReset = update_qp(avctx, q); */
+    /* needReset |= update_max_frame_size(avctx, q); */
+    /* needReset |= update_gop_size(avctx, q); */
+    /* needReset |= update_rir(avctx, q); */
+    /* needReset |= update_low_delay_brc(avctx, q); */
+    /* needReset |= update_frame_rate(avctx, q); */
+    /* needReset |= update_bitrate(avctx, q); */
+    /* needReset |= update_pic_timing_sei(avctx, q); */
+    /* ret = update_min_max_qp(avctx, q); */
+    /* if (ret < 0) */
+    /*     return ret; */
+    /* needReset |= ret; */
+    /* if (!needReset) { */
+    /*     av_log(avctx, AV_LOG_VERBOSE, "UP: Not updated. returning\n"); */
+    /*     return 0; */
+    /* } */
 
     if (avctx->hwaccel_context) {
         AVQSVContext *qsv = avctx->hwaccel_context;
