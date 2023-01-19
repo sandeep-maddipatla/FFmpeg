@@ -2101,8 +2101,14 @@ static int update_frame_rate(AVCodecContext *avctx, QSVEncContext *q)
 
     UPDATE_PARAM(q->old_framerate.num, avctx->framerate.num);
     UPDATE_PARAM(q->old_framerate.den, avctx->framerate.den);
-    if (!updated)
+    if (!updated){
+        av_log(avctx, AV_LOG_DEBUG, "UFR: framerate: %d/%d (%.2f fps).\n",
+               q->param.mfx.FrameInfo.FrameRateExtN,
+               q->param.mfx.FrameInfo.FrameRateExtD,
+               (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD);
+        av_log(avctx, AV_LOG_VERBOSE, "UFR: Not updated. returning\n");
         return 0;
+    }
 
     if (avctx->framerate.den > 0 && avctx->framerate.num > 0) {
         q->param.mfx.FrameInfo.FrameRateExtN = avctx->framerate.num;
@@ -2129,8 +2135,10 @@ static int update_bitrate(AVCodecContext *avctx, QSVEncContext *q)
     UPDATE_PARAM(q->old_rc_initial_buffer_occupancy, avctx->rc_initial_buffer_occupancy);
     UPDATE_PARAM(q->old_bit_rate, avctx->bit_rate);
     UPDATE_PARAM(q->old_rc_max_rate, avctx->rc_max_rate);
-    if (!updated)
+    if (!updated){
+        av_log(avctx, AV_LOG_VERBOSE, "UBR: Not updated. returning\n");
         return 0;
+    }
 
     buffer_size_in_kilobytes   = avctx->rc_buffer_size / 8000;
     initial_delay_in_kilobytes = avctx->rc_initial_buffer_occupancy / 8000;
@@ -2145,10 +2153,13 @@ static int update_bitrate(AVCodecContext *avctx, QSVEncContext *q)
     q->param.mfx.MaxKbps = max_bitrate_kbps / brc_param_multiplier;
     q->param.mfx.BRCParamMultiplier = brc_param_multiplier;
     av_log(avctx, AV_LOG_VERBOSE,
-            "Reset BufferSizeInKB: %d; InitialDelayInKB: %d; "
-            "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n",
+            "UBR::Reset ::  BufferSizeInKB: %d; InitialDelayInKB: %d; "
+            "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n"
+           " FrameRate: numerator: %d, denominator: %d, val: %f\n",
             q->param.mfx.BufferSizeInKB, q->param.mfx.InitialDelayInKB,
-            q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier);
+           q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier,
+           q->param.mfx.FrameInfo.FrameRateExtN, q->param.mfx.FrameInfo.FrameRateExtD,
+           (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD);
     return updated;
 }
 
@@ -2191,8 +2202,10 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     if (ret < 0)
         return ret;
     needReset |= ret;
-    if (!needReset)
+    if (!needReset) {
+        av_log(avctx, AV_LOG_VERBOSE, "UP: Not updated. returning\n");
         return 0;
+    }
 
     if (avctx->hwaccel_context) {
         AVQSVContext *qsv = avctx->hwaccel_context;
@@ -2215,6 +2228,16 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
         q->param.ExtParam    = q->extparam_internal;
         q->param.NumExtParam = q->nb_extparam_internal;
     }
+
+    av_log(avctx, AV_LOG_VERBOSE,
+            "UP: BEFORE Reset:: BufferSizeInKB: %d; InitialDelayInKB: %d; "
+            "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n"
+           " BR: FrameRate: numerator: %d, denominator: %d, val: %f\n",
+            q->param.mfx.BufferSizeInKB, q->param.mfx.InitialDelayInKB,
+           q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier,
+           q->param.mfx.FrameInfo.FrameRateExtN, q->param.mfx.FrameInfo.FrameRateExtD,
+           (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD);
+
     av_log(avctx, AV_LOG_DEBUG, "Parameter change, call msdk reset.\n");
     ret = MFXVideoENCODE_Reset(q->session, &q->param);
     if (ret < 0)
