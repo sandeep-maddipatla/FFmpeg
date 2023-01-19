@@ -2155,11 +2155,12 @@ static int update_bitrate(AVCodecContext *avctx, QSVEncContext *q)
     av_log(avctx, AV_LOG_VERBOSE,
             "UBR::Reset ::  BufferSizeInKB: %d; InitialDelayInKB: %d; "
             "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n"
-           " FrameRate: numerator: %d, denominator: %d, val: %f\n",
+           " FrameRate: numerator: %d, denominator: %d, val: %f, low_delay_brc = %d\n",
             q->param.mfx.BufferSizeInKB, q->param.mfx.InitialDelayInKB,
            q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier,
            q->param.mfx.FrameInfo.FrameRateExtN, q->param.mfx.FrameInfo.FrameRateExtD,
-           (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD);
+           (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD,
+           q->extco3.LowDelayBRC);
     return updated;
 }
 
