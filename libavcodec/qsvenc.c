@@ -2149,7 +2149,7 @@ static int update_bitrate(AVCodecContext *avctx, QSVEncContext *q)
             "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n",
             q->param.mfx.BufferSizeInKB, q->param.mfx.InitialDelayInKB,
             q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier);
-    return 0;
+    return updated;
 }
 
 static int update_pic_timing_sei(AVCodecContext *avctx, QSVEncContext *q)
@@ -2191,10 +2191,8 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     if (ret < 0)
         return ret;
     needReset |= ret;
-    if (!needReset){
-        av_log(avctx, AV_LOG_DEBUG, "No Reset call\n");
+    if (!needReset)
         return 0;
-    }
 
     if (avctx->hwaccel_context) {
         AVQSVContext *qsv = avctx->hwaccel_context;
