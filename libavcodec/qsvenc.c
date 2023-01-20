@@ -894,6 +894,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL)
                 q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ?
                                              MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+            av_log(avctx, AV_LOG_DEBUG, "init_video_param:  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  q->extco.NalHrdConformance, avctx->strict_std_compliance);
 
             if (q->single_sei_nal_unit >= 0)
                 q->extco.SingleSeiNalUnit = q->single_sei_nal_unit ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
@@ -905,6 +906,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL)
                 q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ?
                                              MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+            av_log(avctx, AV_LOG_DEBUG, "init_video_param:  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  q->extco.NalHrdConformance, avctx->strict_std_compliance);
 
             if (q->recovery_point_sei >= 0)
                 q->extco.RecoveryPointSEI = q->recovery_point_sei ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
@@ -2155,12 +2157,13 @@ static int update_bitrate(AVCodecContext *avctx, QSVEncContext *q)
     av_log(avctx, AV_LOG_VERBOSE,
             "UBR::Reset ::  BufferSizeInKB: %d; InitialDelayInKB: %d; "
             "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n"
-           " FrameRate: numerator: %d, denominator: %d, val: %f, low_delay_brc = %d\n",
+           " FrameRate: numerator: %d, denominator: %d, val: %f\n"
+           " low_delay_brc = %d, nal_hrd_conformance = %d\n",
             q->param.mfx.BufferSizeInKB, q->param.mfx.InitialDelayInKB,
            q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier,
            q->param.mfx.FrameInfo.FrameRateExtN, q->param.mfx.FrameInfo.FrameRateExtD,
            (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD,
-           q->extco3.LowDelayBRC);
+           q->extco3.LowDelayBRC, q->extco.NalHrdConformance );
     return updated;
 }
 
@@ -2231,13 +2234,15 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     }
 
     av_log(avctx, AV_LOG_VERBOSE,
-            "UP: BEFORE Reset:: BufferSizeInKB: %d; InitialDelayInKB: %d; "
+            "UpdateParams: BEFORE Reset:: BufferSizeInKB: %d; InitialDelayInKB: %d; "
             "TargetKbps: %d; MaxKbps: %d; BRCParamMultiplier: %d\n"
-           " BR: FrameRate: numerator: %d, denominator: %d, val: %f\n",
+           " BR: FrameRate: numerator: %d, denominator: %d, val: %f\n"
+           "     low_delay_brc = %d, nal_hrd_conformance = %d\n",
             q->param.mfx.BufferSizeInKB, q->param.mfx.InitialDelayInKB,
            q->param.mfx.TargetKbps, q->param.mfx.MaxKbps, q->param.mfx.BRCParamMultiplier,
            q->param.mfx.FrameInfo.FrameRateExtN, q->param.mfx.FrameInfo.FrameRateExtD,
-           (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD);
+           (double)q->param.mfx.FrameInfo.FrameRateExtN / q->param.mfx.FrameInfo.FrameRateExtD,
+           q->extco3.LowDelayBRC, q->extco.NalHrdConformance );
 
     av_log(avctx, AV_LOG_DEBUG, "Parameter change, call msdk reset.\n");
     ret = MFXVideoENCODE_Reset(q->session, &q->param);
