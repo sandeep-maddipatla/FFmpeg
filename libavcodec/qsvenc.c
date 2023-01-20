@@ -1341,14 +1341,14 @@ static int qsv_retrieve_enc_params(AVCodecContext *avctx, QSVEncContext *q)
     q->param.NumExtParam = ext_buf_num;
 
 
-    av_log(avctx, AV_LOG_DEBUG, "%s (line %d):  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  __FUNCTION__, __LINE__, q->extco.NalHrdConformance, avctx->strict_std_compliance);
+    av_log(avctx, AV_LOG_DEBUG, "%s (line %d):  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d, q->param.ExtParam[1]->NalHrdConformance = %d\n",  __FUNCTION__, __LINE__, q->extco.NalHrdConformance, avctx->strict_std_compliance,  ((mfxExtCodingOption*)q->param.ExtParam[1])->NalHrdConformance);
 
     ret = MFXVideoENCODE_GetVideoParam(q->session, &q->param);
     if (ret < 0)
         return ff_qsv_print_error(avctx, ret,
                                   "Error calling GetVideoParam");
 
-    av_log(avctx, AV_LOG_DEBUG, "%s (line %d):  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  __FUNCTION__, __LINE__, q->extco.NalHrdConformance, avctx->strict_std_compliance);
+    av_log(avctx, AV_LOG_DEBUG, "%s (line %d):  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d, q->param.ExtParam[1]->NalHrdConformance = %d\n",  __FUNCTION__, __LINE__, q->extco.NalHrdConformance, avctx->strict_std_compliance,  ((mfxExtCodingOption*)q->param.ExtParam[1])->NalHrdConformance);
 
     q->packet_size = q->param.mfx.BufferSizeInKB * q->param.mfx.BRCParamMultiplier * 1000;
 
