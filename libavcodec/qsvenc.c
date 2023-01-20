@@ -262,7 +262,7 @@ static void dump_video_param(AVCodecContext *avctx, QSVEncContext *q,
         av_log(avctx, AV_LOG_VERBOSE, "Entropy coding: %s; MaxDecFrameBuffering: %"PRIu16"\n",
                co->CAVLC == MFX_CODINGOPTION_ON ? "CAVLC" : "CABAC", co->MaxDecFrameBuffering);
         av_log(avctx, AV_LOG_VERBOSE,
-               "NalHrdConformance: %s; SingleSeiNalUnit: %s; VuiVclHrdParameters: %s VuiNalHrdParameters: %s\n",
+               "%s: NalHrdConformance: %s; SingleSeiNalUnit: %s; VuiVclHrdParameters: %s VuiNalHrdParameters: %s\n", __FUNCTION__,
                print_threestate(co->NalHrdConformance), print_threestate(co->SingleSeiNalUnit),
                print_threestate(co->VuiVclHrdParameters), print_threestate(co->VuiNalHrdParameters));
     } else if ((avctx->codec_id == AV_CODEC_ID_HEVC) && QSV_RUNTIME_VERSION_ATLEAST(q->ver, 1, 28)) {
@@ -1340,10 +1340,15 @@ static int qsv_retrieve_enc_params(AVCodecContext *avctx, QSVEncContext *q)
     q->param.ExtParam    = ext_buffers;
     q->param.NumExtParam = ext_buf_num;
 
+
+    av_log(avctx, AV_LOG_DEBUG, "%s (line %d):  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  __FUNCTION__, __LINE__, q->extco.NalHrdConformance, avctx->strict_std_compliance);
+
     ret = MFXVideoENCODE_GetVideoParam(q->session, &q->param);
     if (ret < 0)
         return ff_qsv_print_error(avctx, ret,
                                   "Error calling GetVideoParam");
+
+    av_log(avctx, AV_LOG_DEBUG, "%s (line %d):  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  __FUNCTION__, __LINE__, q->extco.NalHrdConformance, avctx->strict_std_compliance);
 
     q->packet_size = q->param.mfx.BufferSizeInKB * q->param.mfx.BRCParamMultiplier * 1000;
 
