@@ -2208,7 +2208,7 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
         return 0;
     }
 
-    if (avctx->hwaccel_context) {
+    if (0) { //(avctx->hwaccel_context) {
         AVQSVContext *qsv = avctx->hwaccel_context;
         int i, j;
         q->param.ExtParam = q->extparam;
