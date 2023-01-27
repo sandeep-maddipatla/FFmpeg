@@ -169,6 +169,8 @@ do {                        \
     }                       \
 } while (0)                 \
 
+static int retrieve_and_dump_qsvenc_params(AVCodecContext *avctx, QSVEncContext *q);
+
 static const char *print_ratecontrol(mfxU16 rc_mode)
 {
     int i;
@@ -1143,7 +1145,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
     }
 
     av_log(avctx, AV_LOG_DEBUG, "================At Init==================\n");
-    dump_video_param(avctx, q, q->param.ExtParam);
+    dump_video_param(avctx, q, q->extparam_internal);
     av_log(avctx, AV_LOG_DEBUG, "================End of Init===========\n");
 
 
@@ -1477,6 +1479,32 @@ static int qsvenc_init_session(AVCodecContext *avctx, QSVEncContext *q)
             return ret;
 
         q->session = q->internal_qs.session;
+    }
+
+    return 0;
+}
+
+static int retrieve_and_dump_qsvenc_params(AVCodecContext *avctx, QSVEncContext *q)
+{
+    int ret = 0;
+
+    switch (avctx->codec_id) {
+    case AV_CODEC_ID_MJPEG:
+        ret = qsv_retrieve_enc_jpeg_params(avctx, q);
+        break;
+    case AV_CODEC_ID_VP9:
+        ret = qsv_retrieve_enc_vp9_params(avctx, q);
+        break;
+    case AV_CODEC_ID_AV1:
+        ret = qsv_retrieve_enc_av1_params(avctx, q);
+        break;
+    default:
+        ret = qsv_retrieve_enc_params(avctx, q);
+        break;
+    }
+    if (ret < 0) {
+        av_log(avctx, AV_LOG_ERROR, "Error retrieving encoding parameters.\n");
+        return ret;
     }
 
     return 0;
@@ -2255,16 +2283,19 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
            q->extco3.LowDelayBRC, q->extco.NalHrdConformance );
 
     av_log(avctx, AV_LOG_DEBUG, "Parameter change, call msdk reset.\n");
-
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
     dump_video_param(avctx, q, q->param.ExtParam);
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
 
     ret = MFXVideoENCODE_Reset(q->session, &q->param);
+
     if (ret < 0)
         return ff_qsv_print_error(avctx, ret, "Error during resetting");
-    else
-        av_log(avctx, AV_LOG_DEBUG, "After Successful reset\n");
+
+    av_log(avctx, AV_LOG_DEBUG, "After Successful reset\n");
+    av_log(avctx, AV_LOG_DEBUG, "==================================\n");
+    retrieve_and_dump_qsvenc_params(avctx, q);
+    av_log(avctx, AV_LOG_DEBUG, "==================================\n");
 
     return 0;
 }
