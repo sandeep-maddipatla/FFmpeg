@@ -1142,6 +1142,11 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
         return AVERROR(ENOSYS);
     }
 
+    av_log(avctx, AV_LOG_DEBUG, "================At Init==================\n");
+    dump_video_param(avctx, q, q->param.ExtParam);
+    av_log(avctx, AV_LOG_DEBUG, "================End of Init===========\n");
+
+
     return 0;
 }
 
