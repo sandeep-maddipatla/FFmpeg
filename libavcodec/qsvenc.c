@@ -2250,9 +2250,16 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
            q->extco3.LowDelayBRC, q->extco.NalHrdConformance );
 
     av_log(avctx, AV_LOG_DEBUG, "Parameter change, call msdk reset.\n");
+
+    av_log(avctx, AV_LOG_DEBUG, "==================================\n");
+    dump_video_param(avctx, q, q->param.ExtParam);
+    av_log(avctx, AV_LOG_DEBUG, "==================================\n");
+
     ret = MFXVideoENCODE_Reset(q->session, &q->param);
     if (ret < 0)
         return ff_qsv_print_error(avctx, ret, "Error during resetting");
+    else
+        av_log(avctx, AV_LOG_DEBUG, "After Successful reset\n");
 
     return 0;
 }
