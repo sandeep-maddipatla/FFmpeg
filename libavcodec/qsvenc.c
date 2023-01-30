@@ -1063,7 +1063,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             q->old_int_ref_cycle_dist = q->int_ref_cycle_dist;
             if (q->low_delay_brc >= 0)
                 q->extco3.LowDelayBRC = q->low_delay_brc ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
-            if (q->extco3.LowDelayBRC == MFX_CODING_OPTION_ON)
+            if (q->extco3.LowDelayBRC == MFX_CODINGOPTION_ON)
                 q->extco.NalHrdConformance = MFX_CODINGOPTION_OFF;
 
             q->old_low_delay_brc = q->low_delay_brc;
@@ -2139,7 +2139,7 @@ static int update_low_delay_brc(AVCodecContext *avctx, QSVEncContext *q)
     av_log(avctx, AV_LOG_DEBUG, "Reset LowDelayBRC: %s\n",
            print_threestate(q->extco3.LowDelayBRC));
 
-    if (q->extco3.LowDelayBRC == MFX_CODING_OPTION_ON)
+    if (q->extco3.LowDelayBRC == MFX_CODINGOPTION_ON)
         q->extco.NalHrdConformance = MFX_CODINGOPTION_OFF;
 
     return updated;
