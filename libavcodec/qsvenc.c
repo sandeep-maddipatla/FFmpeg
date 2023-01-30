@@ -893,9 +893,11 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             q->extco.CAVLC = q->cavlc ? MFX_CODINGOPTION_ON
                                       : MFX_CODINGOPTION_UNKNOWN;
 
-            if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL)
-                q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ?
-                                             MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+            /* if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL) */
+            /*     q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ? */
+            /*                                  MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF; */
+            q->extco.NalHrdConformance = MFX_CODINGOPTION_ON;
+
             av_log(avctx, AV_LOG_DEBUG, "init_video_param:  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  q->extco.NalHrdConformance, avctx->strict_std_compliance);
 
             if (q->single_sei_nal_unit >= 0)
@@ -905,9 +907,11 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             q->extco.MaxDecFrameBuffering = q->max_dec_frame_buffering;
             q->extco.AUDelimiter          = q->aud ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
         } else if (avctx->codec_id == AV_CODEC_ID_HEVC) {
-            if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL)
-                q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ?
-                                             MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+            /* if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL) */
+            /*     q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ? */
+            /*                                  MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF; */
+            q->extco.NalHrdConformance = MFX_CODINGOPTION_ON;
+
             av_log(avctx, AV_LOG_DEBUG, "init_video_param:  q->extco.NalHrdConformance = %d, avctx->strict_std_compliance = %d\n",  q->extco.NalHrdConformance, avctx->strict_std_compliance);
 
             if (q->recovery_point_sei >= 0)
@@ -1059,6 +1063,9 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             q->old_int_ref_cycle_dist = q->int_ref_cycle_dist;
             if (q->low_delay_brc >= 0)
                 q->extco3.LowDelayBRC = q->low_delay_brc ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+            if (q->extco3.LowDelayBRC == MFX_CODING_OPTION_ON)
+                q->extco.NalHrdConformance = MFX_CODINGOPTION_OFF;
+
             q->old_low_delay_brc = q->low_delay_brc;
             if (q->max_frame_size_i >= 0)
                 q->extco3.MaxFrameSizeI = q->max_frame_size_i;
@@ -2131,6 +2138,9 @@ static int update_low_delay_brc(AVCodecContext *avctx, QSVEncContext *q)
         q->extco3.LowDelayBRC = q->low_delay_brc ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
     av_log(avctx, AV_LOG_DEBUG, "Reset LowDelayBRC: %s\n",
            print_threestate(q->extco3.LowDelayBRC));
+
+    if (q->extco3.LowDelayBRC == MFX_CODING_OPTION_ON)
+        q->extco.NalHrdConformance = MFX_CODINGOPTION_OFF;
 
     return updated;
 }
