@@ -2248,7 +2248,7 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     needReset |= update_rir(avctx, q);
     needReset |= update_low_delay_brc(avctx, q);
     needReset |= update_frame_rate(avctx, q);
-    needReset |= update_bitrate(avctx, q);
+    //needReset |= update_bitrate(avctx, q);
     needReset |= update_pic_timing_sei(avctx, q);
     ret = update_min_max_qp(avctx, q);
     if (ret < 0)
