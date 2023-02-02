@@ -2177,6 +2177,8 @@ static int update_frame_rate(AVCodecContext *avctx, QSVEncContext *q)
 
 static int update_bitrate(AVCodecContext *avctx, QSVEncContext *q)
 {
+    return 1;
+    
     int updated = 0;
     int target_bitrate_kbps, max_bitrate_kbps, brc_param_multiplier;
     int buffer_size_in_kilobytes, initial_delay_in_kilobytes;
@@ -2248,18 +2250,13 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     needReset |= update_rir(avctx, q);
     needReset |= update_low_delay_brc(avctx, q);
     needReset |= update_frame_rate(avctx, q);
-    //needReset |= update_bitrate(avctx, q);
+    needReset |= update_bitrate(avctx, q);
     needReset |= update_pic_timing_sei(avctx, q);
     ret = update_min_max_qp(avctx, q);
     if (ret < 0)
         return ret;
     needReset |= ret;
 
-    static int firstcall = 1;
-    if (!firstcall)
-        needReset = 1;
-    firstcall = 0;
-    
     if (!needReset) {
         av_log(avctx, AV_LOG_VERBOSE, "UP: Not updated. returning\n");
         return 0;
