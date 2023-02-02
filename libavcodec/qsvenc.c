@@ -2254,12 +2254,6 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     if (ret < 0)
         return ret;
     needReset |= ret;
-
-    static int firstcall = 1;
-    if (!firstcall)
-        needReset = 1;
-    firstcall = 0;
-    
     if (!needReset) {
         av_log(avctx, AV_LOG_VERBOSE, "UP: Not updated. returning\n");
         return 0;
