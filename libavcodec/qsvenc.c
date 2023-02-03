@@ -2248,7 +2248,7 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     needReset |= update_rir(avctx, q);
     needReset |= update_low_delay_brc(avctx, q);
     needReset |= update_frame_rate(avctx, q);
-    //needReset |= update_bitrate(avctx, q);
+    needReset |= update_bitrate(avctx, q);
     needReset |= update_pic_timing_sei(avctx, q);
     ret = update_min_max_qp(avctx, q);
     if (ret < 0)
@@ -2261,6 +2261,10 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
 
     if (avctx->hwaccel_context) {
         AVQSVContext *qsv = avctx->hwaccel_context;
+        av_log(avctx, AV_LOG_VERBOSE,
+               "hwaccel_context block:  q->nb_extparam_internal = %d,  qsv->nb_ext_buffers = %d\n",
+               q->nb_extparam_internal, qsv->nb_ext_buffers);
+
         int i, j;
         q->param.ExtParam = q->extparam;
         for (i = 0; i < qsv->nb_ext_buffers; i++)
@@ -2275,10 +2279,18 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
             if (j < qsv->nb_ext_buffers)
                 continue;
             q->param.ExtParam[q->param.NumExtParam++] = q->extparam_internal[i];
+            av_log(avctx, AV_LOG_VERBOSE,
+                   "hwaccel_context block:  q->param.NumExtParam = %d\n",
+                    q->param.NumExtParam);
         }
     } else {
+        av_log(avctx, AV_LOG_VERBOSE,
+               "else block:  q->nb_extparam_internal = %d\n", q->nb_extparam_internal);
         q->param.ExtParam    = q->extparam_internal;
         q->param.NumExtParam = q->nb_extparam_internal;
+        av_log(avctx, AV_LOG_VERBOSE,
+               "else block:  q->param.NumExtParam = %d\n",
+               q->param.NumExtParam);
     }
 
     av_log(avctx, AV_LOG_VERBOSE,
