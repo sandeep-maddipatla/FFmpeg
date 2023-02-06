@@ -189,6 +189,187 @@ static const char *print_threestate(mfxU16 val)
     return "unknown";
 }
 
+#define ALOG_INT(field) av_log(avctx, AV_LOG_VERBOSE, #field": %d\n", field);
+
+static void dump_mfx_video_param(AVCodecContext *avctx, mfxVideoParam* p)
+{
+    av_log(avctx, AV_LOG_VERBOSE, "=== mfxVideoParam ===\n");
+    if (!p){
+        av_log(avctx, AV_LOG_VERBOSE, "Null input. aborting dump\n");
+        return;
+    }
+
+    ALOG_INT(p->AllocId);
+    ALOG_INT(p->AsyncDepth);
+    ALOG_INT(p->Protected);
+    ALOG_INT(p->IOPattern);
+    ALOG_INT(p->NumExtParam);
+    ALOG_INT(p->mfx.TargetUsage);
+    ALOG_INT(p->mfx.GopPicSize);
+    ALOG_INT(p->mfx.GopRefDist);
+    ALOG_INT(p->mfx.GopOptFlag);
+    ALOG_INT(p->mfx.IdrInterval);
+    ALOG_INT(p->mfx.RateControlMethod);
+    ALOG_INT(p->mfx.InitialDelayInKB);
+    ALOG_INT(p->mfx.BufferSizeInKB);
+    ALOG_INT(p->mfx.TargetKbps);
+    ALOG_INT(p->mfx.MaxKbps);
+    ALOG_INT(p->mfx.NumSlice);
+    ALOG_INT(p->mfx.NumRefFrame);
+    ALOG_INT(p->mfx.EncodedOrder);
+}
+
+
+static void dump_ext_coding_option(AVCodecContext *avctx, mfxExtCodingOption* co)
+{
+    av_log(avctx, AV_LOG_VERBOSE, "=== ExtBuffer[1]: ExtCodingOption ===\n");
+    if (!co){
+        av_log(avctx, AV_LOG_VERBOSE, "Null co. aborting dump\n");
+        return;
+    }
+
+    ALOG_INT(co->Header);
+    ALOG_INT(co->RateDistortionOpt);
+    ALOG_INT(co->MECostType);
+    ALOG_INT(co->MESearchType);
+    av_log(avctx, AV_LOG_VERBOSE, "co->MVSearchWindow = {%d, %d}\n", co->MVSearchWindow.x, co->MVSearchWindow.y);
+    ALOG_INT(co->FramePicture);
+    ALOG_INT(co->CAVLC);
+    ALOG_INT(co-> RecoveryPointSEI);
+    ALOG_INT(co->ViewOutput);
+    ALOG_INT(co->NalHrdConformance);
+    ALOG_INT(co->SingleSeiNalUnit);
+    ALOG_INT(co->VuiVclHrdParameters);
+    ALOG_INT(co->RefPicListReordering);
+    ALOG_INT(co->ResetRefList);
+    ALOG_INT(co->RefPicMarkRep);
+    ALOG_INT(co->FieldOutput);
+    ALOG_INT(co->IntraPredBlockSize);
+    ALOG_INT(co->InterPredBlockSize);
+    ALOG_INT(co->MVPrecision);
+    ALOG_INT(co->MaxDecFrameBuffering);
+    ALOG_INT(co->AUDelimiter);
+    ALOG_INT(co->PicTimingSEI);
+    ALOG_INT(co->VuiNalHrdParameters);
+}
+
+static void dump_ext_coding_option2(AVCodecContext *avctx, mfxExtCodingOption2* co2)
+{
+    av_log(avctx, AV_LOG_VERBOSE, "=== ExtBuffer[2]: ExtCodingOption2 ===\n");
+    if (!co2){
+        av_log(avctx, AV_LOG_VERBOSE, "Null co2. aborting dump");
+        return;
+    }
+
+    ALOG_INT(co2->Header);
+    ALOG_INT(co2->IntRefType);
+    ALOG_INT(co2->IntRefCycleSize);
+    ALOG_INT(co2->IntRefQPDelta);
+    ALOG_INT(co2->MaxFrameSize);
+    ALOG_INT(co2->MaxSliceSize);
+    ALOG_INT(co2->BitrateLimit);
+    ALOG_INT(co2->MBBRC);
+    ALOG_INT(co2->ExtBRC);
+    ALOG_INT(co2->LookAheadDepth);
+    ALOG_INT(co2->Trellis);
+    ALOG_INT(co2->RepeatPPS);
+    ALOG_INT(co2->BRefType);
+    ALOG_INT(co2->AdaptiveI);
+    ALOG_INT(co2->AdaptiveB);
+    ALOG_INT(co2->LookAheadDS);
+    ALOG_INT(co2->NumMbPerSlice);
+    ALOG_INT(co2->SkipFrame);
+    ALOG_INT(co2->MinQPI);
+    ALOG_INT(co2->MaxQPI);
+    ALOG_INT(co2->MinQPP);
+    ALOG_INT(co2->MaxQPP);
+    ALOG_INT(co2->MinQPB);
+    ALOG_INT(co2->MaxQPB);
+    ALOG_INT(co2->FixedFrameRate);
+    ALOG_INT(co2->DisableDeblockingIdc);
+    ALOG_INT(co2->DisableVUI);
+    ALOG_INT(co2->BufferingPeriodSEI);
+    ALOG_INT(co2->EnableMAD);
+    ALOG_INT(co2->UseRawRef);
+}
+
+static void dump_ext_coding_option3(AVCodecContext *avctx, mfxExtCodingOption3* co3)
+{
+    av_log(avctx, AV_LOG_VERBOSE, "=== ExtBuffer[3]: ExtCodingOption3 ===\n");
+    if (!co3){
+        av_log(avctx, AV_LOG_VERBOSE, "Null co3. aborting dump");
+        return;
+    }
+
+    ALOG_INT(co3->NumSliceI);
+    ALOG_INT(co3->NumSliceB);
+    ALOG_INT(co3->WinBRCMaxAvgKbps);
+    ALOG_INT(co3->WinBRCSize);
+    ALOG_INT(co3->QVBRQuality);
+    ALOG_INT(co3->EnableMBQP);
+    ALOG_INT(co3->IntRefCycleDist);
+    ALOG_INT(co3->DirectBiasAdjustment);
+    ALOG_INT(co3->GlobalMotionBiasAdjustment);
+    ALOG_INT(co3->MVCostScalingFactor);
+    ALOG_INT(co3->MBDisableSkipMap);
+    ALOG_INT(co3->WeightedPred);
+    ALOG_INT(co3->WeightedBiPred);
+    ALOG_INT(co3->AspectRatioInfoPresent);
+    ALOG_INT(co3->OverscanInfoPresent);
+    ALOG_INT(co3->OverscanAppropriate);
+    ALOG_INT(co3->TimingInfoPresent);
+    ALOG_INT(co3->BitstreamRestriction);
+    ALOG_INT(co3->LowDelayHrd);
+    ALOG_INT(co3->MotionVectorsOverPicBoundaries);
+    ALOG_INT(co3->ScenarioInfo);
+    ALOG_INT(co3->ContentInfo);
+    ALOG_INT(co3->PRefType);
+    ALOG_INT(co3->FadeDetection);
+#if (MFX_VERSION >= MFX_VERSION_NEXT)
+    //ALOG_INT(co3->DeblockingAlphaTcOffset);  /* -12..12 (slice_alpha_c0_offset_div2 << 1) */
+    //ALOG_INT(co3->DeblockingBetaOffset);     /* -12..12 (slice_beta_offset_div2 << 1) */
+#endif
+    ALOG_INT(co3->GPB);
+    ALOG_INT(co3->MaxFrameSizeI);
+    ALOG_INT(co3->MaxFrameSizeP);
+    ALOG_INT(co3->EnableQPOffset);
+
+    av_log(avctx, AV_LOG_VERBOSE, "co3->QPOffset = {%d, %d, %d, %d, %d, %d, %d, %d}\n",
+           co3->QPOffset[0], co3->QPOffset[1], co3->QPOffset[2], co3->QPOffset[3],
+           co3->QPOffset[4], co3->QPOffset[5], co3->QPOffset[6], co3->QPOffset[7]);
+
+av_log(avctx, AV_LOG_VERBOSE, "co3->NumRefActiveP = {%d, %d, %d, %d, %d, %d, %d, %d}\n",
+       co3->NumRefActiveP[0], co3->NumRefActiveP[1], co3->NumRefActiveP[2], co3->NumRefActiveP[3],
+       co3->NumRefActiveP[4], co3->NumRefActiveP[5], co3->NumRefActiveP[6], co3->NumRefActiveP[7]);
+
+av_log(avctx, AV_LOG_VERBOSE, "co3->NumRefActiveBL0 = {%d, %d, %d, %d, %d, %d, %d, %d}\n",
+       co3->NumRefActiveBL0[0], co3->NumRefActiveBL0[1], co3->NumRefActiveBL0[2], co3->NumRefActiveBL0[3],
+       co3->NumRefActiveBL0[4], co3->NumRefActiveBL0[5], co3->NumRefActiveBL0[6], co3->NumRefActiveBL0[7]);
+
+av_log(avctx, AV_LOG_VERBOSE, "co3->NumRefActiveBL1 = {%d, %d, %d, %d, %d, %d, %d, %d}\n",
+       co3->NumRefActiveBL1[0], co3->NumRefActiveBL1[1], co3->NumRefActiveBL1[2], co3->NumRefActiveBL1[3],
+       co3->NumRefActiveBL1[4], co3->NumRefActiveBL1[5], co3->NumRefActiveBL1[6], co3->NumRefActiveBL1[7]);
+
+    ALOG_INT(co3->TransformSkip);
+    ALOG_INT(co3->TargetChromaFormatPlus1);
+    ALOG_INT(co3->TargetBitDepthLuma);
+    ALOG_INT(co3->TargetBitDepthChroma);
+    ALOG_INT(co3->BRCPanicMode);
+    ALOG_INT(co3->LowDelayBRC);
+    ALOG_INT(co3->EnableMBForceIntra);
+    ALOG_INT(co3->AdaptiveMaxFrameSize);
+    ALOG_INT(co3->RepartitionCheckEnable);
+    ALOG_INT(co3->EncodedUnitsInfo);
+    ALOG_INT(co3->EnableNalUnitType);
+
+    ALOG_INT(co3->AdaptiveLTR);
+    ALOG_INT(co3->AdaptiveCQM);
+    ALOG_INT(co3->AdaptiveRef);
+#ifdef ONEVPL_EXPERIMENTAL
+    ALOG_INT(co3->CPUEncToolsProcessing);
+#endif
+}
+
 static void dump_video_param(AVCodecContext *avctx, QSVEncContext *q,
                              mfxExtBuffer **coding_opts)
 {
@@ -210,6 +391,7 @@ static void dump_video_param(AVCodecContext *avctx, QSVEncContext *q,
     if (q->exthevctiles_idx > 0)
         exthevctiles = (mfxExtHEVCTiles *)coding_opts[q->exthevctiles_idx];
 
+    av_log(avctx, AV_LOG_VERBOSE, "avctx.....\n");
     av_log(avctx, AV_LOG_VERBOSE, "profile: %s; level: %"PRIu16"\n",
            print_profile(avctx->codec_id, info->CodecProfile), info->CodecLevel);
 
@@ -359,6 +541,12 @@ static void dump_video_param(AVCodecContext *avctx, QSVEncContext *q,
         av_log(avctx, AV_LOG_VERBOSE, "NumTileColumns: %"PRIu16"; NumTileRows: %"PRIu16"\n",
                exthevctiles->NumTileColumns, exthevctiles->NumTileRows);
     }
+
+    dump_mfx_video_param(avctx, &q->param);
+    dump_ext_coding_option(avctx,co);
+    dump_ext_coding_option2(avctx,co2);
+    dump_ext_coding_option3(avctx,co3);
+
 }
 
 static void dump_video_vp9_param(AVCodecContext *avctx, QSVEncContext *q,
@@ -1152,7 +1340,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
     }
 
     av_log(avctx, AV_LOG_DEBUG, "================At Init==================\n");
-    dump_video_param(avctx, q, q->extparam_internal);
+    dump_video_param (avctx, q, q->extparam_internal);
     av_log(avctx, AV_LOG_DEBUG, "================End of Init===========\n");
 
 
@@ -2314,7 +2502,7 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     if (ret < 0)
         return ff_qsv_print_error(avctx, ret, "Error during resetting");
 
-    av_log(avctx, AV_LOG_DEBUG, "After Successful reset\n");
+    av_log(avctx, AV_LOG_DEBUG, "After Successful reset. ret = %d\n", ret);
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
     retrieve_and_dump_qsvenc_params(avctx, q);
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
