@@ -48,7 +48,7 @@
 #define QSV_VERSION_MAJOR 1
 #define QSV_VERSION_MINOR 1
 
-#define ASYNC_DEPTH_DEFAULT 4       // internal parallelism
+#define ASYNC_DEPTH_DEFAULT 1       // internal parallelism
 
 #define QSV_MAX_ENC_PAYLOAD 2       // # of mfxEncodeCtrl payloads supported
 #define QSV_MAX_ENC_EXTPARAM 2
