@@ -26,6 +26,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <mfxvideo.h>
+#include <sys/time.h>
 
 #include "libavutil/common.h"
 #include "libavutil/hwcontext.h"
@@ -2422,10 +2423,30 @@ static int update_pic_timing_sei(AVCodecContext *avctx, QSVEncContext *q)
     return updated;
 }
 
+static double TickTock()
+{
+    //Return current time in milliseconds
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    double tmp = (tv.tv_sec*1000000LL + tv.tv_usec);
+    double time_in_ms = tmp/1000;
+    return time_in_ms;
+}
+
 static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
                              const AVFrame *frame)
 {
     int needReset = 0, ret = 0;
+
+    static double startTime = 0;
+    static int frameNum = 0;
+
+    frameNum++;
+    if (startTime == 0)
+    {
+        startTime = TickTock();
+        frameNum = 0;
+    }
 
     if (!frame || avctx->codec_id == AV_CODEC_ID_MJPEG)
         return 0;
@@ -2497,12 +2518,19 @@ static int update_parameters(AVCodecContext *avctx, QSVEncContext *q,
     dump_video_param(avctx, q, q->param.ExtParam);
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
 
+    double resetStartTime = TickTock() - startTime;
+
     ret = MFXVideoENCODE_Reset(q->session, &q->param);
+
+    double resetEndTime = TickTock() - startTime;
 
     if (ret < 0)
         return ff_qsv_print_error(avctx, ret, "Error during resetting");
 
     av_log(avctx, AV_LOG_DEBUG, "After Successful reset. ret = %d\n", ret);
+    av_log(avctx, AV_LOG_INFO, "Reset Frame %d: Start = %.3f, Stop = %.3f, Duration = %.3f\n",
+           frameNum, resetStartTime, resetEndTime, resetEndTime - resetStartTime);
+
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
     retrieve_and_dump_qsvenc_params(avctx, q);
     av_log(avctx, AV_LOG_DEBUG, "==================================\n");
