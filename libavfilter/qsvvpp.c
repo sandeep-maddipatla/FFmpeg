@@ -705,6 +705,8 @@ int ff_qsvvpp_init(AVFilterContext *avctx, QSVVPPParam *param)
     int ret;
     QSVVPPContext *s = avctx->priv;
 
+    av_log(avctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+
     s->filter_frame  = param->filter_frame;
     if (!s->filter_frame)
         s->filter_frame = ff_filter_frame;
@@ -742,8 +744,15 @@ int ff_qsvvpp_init(AVFilterContext *avctx, QSVVPPParam *param)
     }
 
     s->vpp_param.vpp.In = s->frame_infos[0];
+    av_log(avctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+    av_log(avctx, AV_LOG_DEBUG, "\t param.vpp.In  = {w = %d, h = %d, FourCC = %d\n",
+           s->vpp_param.vpp.In.Width, s->vpp_param.vpp.In.Height, s->vpp_param.vpp.In.FourCC);
 
     ret = fill_frameinfo_by_link(&s->vpp_param.vpp.Out, avctx->outputs[0]);
+    av_log(avctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+    av_log(avctx, AV_LOG_DEBUG, "\t param.vpp.Out = {w = %d, h = %d, FourCC = %d\n",
+           s->vpp_param.vpp.Out.Width, s->vpp_param.vpp.Out.Height, s->vpp_param.vpp.Out.FourCC);
+
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Fail to get frame info from link.\n");
         goto failed;
@@ -824,6 +833,8 @@ int ff_qsvvpp_close(AVFilterContext *avctx)
 {
     QSVVPPContext *s = avctx->priv;
 
+    av_log(avctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+
     if (s->session) {
         MFXVideoVPP_Close(s->session);
         MFXClose(s->session);
@@ -853,9 +864,16 @@ int ff_qsvvpp_filter_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *picr
     QSVFrame         *in_frame, *out_frame;
     int               ret, ret1, filter_ret;
 
+    av_log(ctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+    av_log(ctx, AV_LOG_DEBUG, "\t inlink = %p, picref = %p, outlink = %p\n", inlink, picref, outlink);
+
     while (s->eof && av_fifo_read(s->async_fifo, &aframe, 1) >= 0) {
         if (MFXVideoCORE_SyncOperation(s->session, aframe.sync, 1000) < 0)
             av_log(ctx, AV_LOG_WARNING, "Sync failed.\n");
+
+        av_log(ctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+        av_log(ctx, AV_LOG_DEBUG, "\t outlink = %p, aframe.frame = %p, aframe.frame->frame=%p\n",
+               outlink, aframe.frame, aframe.frame->frame);
 
         filter_ret = s->filter_frame(outlink, aframe.frame->frame);
         if (filter_ret < 0) {
@@ -871,6 +889,9 @@ int ff_qsvvpp_filter_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *picr
         return 0;
 
     in_frame = submit_frame(s, inlink, picref);
+    av_log(ctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+    av_log(ctx, AV_LOG_DEBUG, "\t inlink = %p, picref=%p\n", inlink, picref);
+
     if (!in_frame) {
         av_log(ctx, AV_LOG_ERROR, "Failed to submit frame on input[%d]\n",
                FF_INLINK_IDX(inlink));
@@ -885,6 +906,11 @@ int ff_qsvvpp_filter_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *picr
         }
 
         do {
+            av_log(ctx, AV_LOG_DEBUG, "%s:%d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+            av_log(ctx, AV_LOG_DEBUG, "\t in = %p { w=%d, h=%d, FourCC=%d \n", &in_frame->surface,
+                   in_frame->surface.Info.Width,in_frame->surface.Info.Height,in_frame->surface.Info.FourCC);
+            av_log(ctx, AV_LOG_DEBUG, "\t out = %p { w=%d, h=%d, FourCC=%d \n", &out_frame->surface,
+                   out_frame->surface.Info.Width,out_frame->surface.Info.Height,out_frame->surface.Info.FourCC);
             ret = MFXVideoVPP_RunFrameVPPAsync(s->session, &in_frame->surface,
                                                &out_frame->surface, NULL, &sync);
             if (ret == MFX_WRN_DEVICE_BUSY)
