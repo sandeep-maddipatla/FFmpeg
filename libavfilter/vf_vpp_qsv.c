@@ -506,6 +506,8 @@ static int config_output(AVFilterLink *outlink)
         if (QSV_RUNTIME_VERSION_ATLEAST(mfx_version, 1, 19)) {
             int mode = vpp->scale_mode;
 
+            av_log(ctx, AV_LOG_DEBUG, "%s: %d (%s) .. mode = %d\n", __FILE__, __LINE__, __FUNCTION__, mode);
+
 #if QSV_ONEVPL
             if (mode > 2)
                 mode = MFX_SCALING_MODE_VENDOR + mode - 2;
@@ -525,7 +527,19 @@ static int config_output(AVFilterLink *outlink)
         vpp->detail || vpp->procamp || vpp->rotate || vpp->hflip ||
         inlink->w != outlink->w || inlink->h != outlink->h || in_format != vpp->out_format ||
         !vpp->has_passthrough)
+    {
+        av_log(ctx, AV_LOG_DEBUG, "%s: %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+        av_log(ctx, AV_LOG_DEBUG, "%s: %d (%s)\t vpp = {frc = %d, crop = %d, deinterlace = %d, denoise = %d, detail = %d, procamp = %d, rotate = %d, hflip = %d, vpp->has_passthrough = %d}\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               vpp->use_frc, vpp->use_crop, vpp->deinterlace, vpp->denoise, vpp->detail,
+               vpp->procamp, vpp->rotate, vpp->hflip, vpp->has_passthrough);
+        av_log(ctx, AV_LOG_DEBUG, "%s: %d (%s)\t inlink = {w = %d, h = %d}, in_format = %d \n",
+               __FILE__, __LINE__, __FUNCTION__, inlink->w, inlink->h, in_format);
+        av_log(ctx, AV_LOG_DEBUG, "%s: %d (%s)\t outlink = {w = %d, h = %d}, vpp->out_format = %d \n",
+               __FILE__, __LINE__, __FUNCTION__, outlink->w, outlink->h, vpp->out_format);
+
         return ff_qsvvpp_init(ctx, &param);
+    }
     else {
         /* No MFX session is created in this case */
         av_log(ctx, AV_LOG_VERBOSE, "qsv vpp pass through mode.\n");
