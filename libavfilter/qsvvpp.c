@@ -411,6 +411,8 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
     if (!qsv_frame)
         return NULL;
 
+    av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
+
     /* Turn AVFrame into mfxFrameSurface1.
      * For video/opaque memory mode, pix_fmt is AV_PIX_FMT_QSV, and
      * mfxFrameSurface1 is stored in AVFrame->data[3];
@@ -422,10 +424,12 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
             av_log(ctx, AV_LOG_ERROR, "QSVVPP gets a wrong frame.\n");
             return NULL;
         }
+        av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
         qsv_frame->frame   = av_frame_clone(picref);
         qsv_frame->surface = *(mfxFrameSurface1 *)qsv_frame->frame->data[3];
     } else {
         /* make a copy if the input is not padded as libmfx requires */
+        av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
         if (picref->height & 31 || picref->linesize[0] & 31) {
             qsv_frame->frame = ff_get_video_buffer(inlink,
                                                    FFALIGN(inlink->w, 32),
@@ -436,6 +440,7 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
             qsv_frame->frame->width   = picref->width;
             qsv_frame->frame->height  = picref->height;
 
+            av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s): Copy frame\n", __FILE__, __LINE__, __FUNCTION__);
             if (av_frame_copy(qsv_frame->frame, picref) < 0) {
                 av_frame_free(&qsv_frame->frame);
                 return NULL;
@@ -445,14 +450,20 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
                 av_frame_free(&qsv_frame->frame);
                 return NULL;
             }
-        } else
+        } else {
+            av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
             qsv_frame->frame = av_frame_clone(picref);
+        }
+
+        av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
 
         if (map_frame_to_surface(qsv_frame->frame,
                                  &qsv_frame->surface) < 0) {
             av_log(ctx, AV_LOG_ERROR, "Unsupported frame.\n");
             return NULL;
         }
+
+        av_log(ctx, AV_LOG_DEBUG, "%s: Line %d (%s)\n", __FILE__, __LINE__, __FUNCTION__);
     }
 
     qsv_frame->surface.Info           = s->frame_infos[FF_INLINK_IDX(inlink)];
